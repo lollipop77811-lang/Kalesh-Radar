@@ -1,21 +1,24 @@
 """
 Kalesh Radar — Configuration
 All tweakable knobs live here.
+Secrets are read from environment variables (set in GitHub Actions or .env file).
 """
 
+import os
+
 # ── Discord ──────────────────────────────────────────────────────────────────
-DISCORD_BOT_TOKEN = ""  # Paste your bot token here
+DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "")
 DISCORD_CHANNEL_MAP = {
-    "morning": "",    # Channel ID for 9 AM briefing
-    "afternoon": "",  # Channel ID for 1 PM briefing
-    "evening": "",    # Channel ID for 5 PM briefing
-    "night": "",      # Channel ID for 9 PM briefing
+    "morning": os.environ.get("CHANNEL_MORNING", ""),
+    "afternoon": os.environ.get("CHANNEL_AFTERNOON", ""),
+    "evening": os.environ.get("CHANNEL_EVENING", ""),
+    "night": os.environ.get("CHANNEL_NIGHT", ""),
 }
 
 # ── Reddit ───────────────────────────────────────────────────────────────────
-REDDIT_USER_AGENT = "kalesh-radar-bot/0.1 (by /u/yourusername)"
-REDDIT_CLIENT_ID = ""       # Optional but recommended — register at reddit.com/prefs/apps
-REDDIT_CLIENT_SECRET = ""   # Optional
+REDDIT_USER_AGENT = "kalesh-radar-bot/0.1 (by /u/kaleshradar)"
+REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", "")
+REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", "")
 
 # Subreddits to track with their sort strategy
 REDDIT_SUBREDDITS = {
@@ -63,12 +66,12 @@ X_CURATORS = {
 }
 
 # ── LLM (for satirizability scoring + safety gate) ──────────────────────────
-LLM_PROVIDER = "openai"   # "openai" or "anthropic"
-OPENAI_API_KEY = ""
-OPENAI_MODEL = "gpt-4o-mini"
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "openai")  # "openai" or "anthropic"
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
-ANTHROPIC_API_KEY = ""
-ANTHROPIC_MODEL = "claude-haiku-4-20250414"
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-20250414")
 
 # ── Scoring Weights ──────────────────────────────────────────────────────────
 SCORING_WEIGHTS = {
