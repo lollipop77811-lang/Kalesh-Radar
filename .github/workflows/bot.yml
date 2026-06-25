@@ -1,0 +1,81 @@
+name: Kalesh Radar Briefing
+
+on:
+  schedule:
+    # 9 AM IST = 03:30 UTC
+    - cron: '30 3 * * *'
+    # 1 PM IST = 07:30 UTC
+    - cron: '30 7 * * *'
+    # 5 PM IST = 11:30 UTC
+    - cron: '30 11 * * *'
+    # 9 PM IST = 15:30 UTC
+    - cron: '30 15 * * *'
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Slot to run (for manual testing)'
+        required: false
+        default: 'morning'
+        type: choice
+        options:
+          - morning
+          - afternoon
+          - evening
+          - night
+          - all
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine slot
+        id: slot
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SLOT="${{ inputs.slot }}"
+          else
+            # Auto-detect from UTC hour
+            HOUR=$(date -u +%H)
+            case $HOUR in
+              3|4)  SLOT="morning" ;;
+              7|8)  SLOT="afternoon" ;;
+              11|12) SLOT="evening" ;;
+              15|16) SLOT="night" ;;
+              *)    SLOT="morning" ;;  # fallback
+            esac
+          fi
+          echo "slot=$SLOT" >> $GITHUB_OUTPUT
+          echo "Running slot: $SLOT"
+
+      - name: Run briefing
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        run: |
+          SLOT="${{ steps.slot.outputs.slot }}"
+          if [ "$SLOT" = "all" ]; then
+            python -m bot.main --all-slots
+          else
+            python -m bot.main --slot "$SLOT"
+          fi
+
+      - name: Upload database artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kalesh-db
+          path: data/kalesh.db
+          retention-days: 30
