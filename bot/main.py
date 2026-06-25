@@ -21,7 +21,7 @@ from bot.config import SLOT_CONFIG, TOPICS_PER_SLOT
 from bot.sources import fetch_all_topics
 from bot.safety import check_safety
 from bot.scoring import score_all_topics, select_top_topics
-from bot.discord_bot import send_briefing_sync
+from bot.discord_bot import send_briefing_sync, send_error
 from bot.db import save_topics, get_recent_urls, get_connection
 
 logging.basicConfig(
@@ -49,6 +49,10 @@ def run_slot(slot: str):
 
     if not topics:
         logger.warning("No topics fetched. Nothing to do.")
+        try:
+            send_error(slot, "No topics fetched from any source. Reddit or RSSHub may be unavailable.")
+        except Exception:
+            pass
         return
 
     logger.info(f"Fetched {len(topics)} raw topics")
@@ -86,6 +90,10 @@ def run_slot(slot: str):
 
     if not safe_topics:
         logger.warning("All topics blocked by safety gate. Nothing to send.")
+        try:
+            send_error(slot, "All topics blocked by the safety gate. Nothing controversial enough or topics were too sensitive.")
+        except Exception:
+            pass
         return
 
     # ── 4. Score ─────────────────────────────────────────────────────────
@@ -125,10 +133,7 @@ def run_slot(slot: str):
 
     # ── 7. Send Discord briefing ─────────────────────────────────────────
     logger.info("Step 7: Sending Discord briefing...")
-    try:
-        send_briefing_sync(selected, slot)
-    except Exception as e:
-        logger.error(f"Discord send failed: {e}")
+    send_briefing_sync(selected, slot)  # Let errors propagate — workflow should show red
 
     elapsed = time.time() - start_time
     logger.info(f"{'='*60}")

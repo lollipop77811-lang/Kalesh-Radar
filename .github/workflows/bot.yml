@@ -60,11 +60,10 @@ jobs:
 
       - name: Run briefing
         env:
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          CHANNEL_MORNING: ${{ secrets.CHANNEL_MORNING }}
-          CHANNEL_AFTERNOON: ${{ secrets.CHANNEL_AFTERNOON }}
-          CHANNEL_EVENING: ${{ secrets.CHANNEL_EVENING }}
-          CHANNEL_NIGHT: ${{ secrets.CHANNEL_NIGHT }}
+          WEBHOOK_MORNING: ${{ secrets.WEBHOOK_MORNING }}
+          WEBHOOK_AFTERNOON: ${{ secrets.WEBHOOK_AFTERNOON }}
+          WEBHOOK_EVENING: ${{ secrets.WEBHOOK_EVENING }}
+          WEBHOOK_NIGHT: ${{ secrets.WEBHOOK_NIGHT }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}

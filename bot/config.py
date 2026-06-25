@@ -6,13 +6,13 @@ Secrets are read from environment variables (set in GitHub Actions or .env file)
 
 import os
 
-# ── Discord ──────────────────────────────────────────────────────────────────
-DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "")
+# ── Discord (Webhooks — more reliable than bot gateway for CI) ────────────────
+# Create webhooks in each channel: Channel Settings → Integrations → Webhooks → New
 DISCORD_CHANNEL_MAP = {
-    "morning": os.environ.get("CHANNEL_MORNING", ""),
-    "afternoon": os.environ.get("CHANNEL_AFTERNOON", ""),
-    "evening": os.environ.get("CHANNEL_EVENING", ""),
-    "night": os.environ.get("CHANNEL_NIGHT", ""),
+    "morning":   os.environ.get("WEBHOOK_MORNING", ""),
+    "afternoon": os.environ.get("WEBHOOK_AFTERNOON", ""),
+    "evening":   os.environ.get("WEBHOOK_EVENING", ""),
+    "night":     os.environ.get("WEBHOOK_NIGHT", ""),
 }
 
 # ── Reddit ───────────────────────────────────────────────────────────────────

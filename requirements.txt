@@ -1,5 +1,4 @@
 # Kalesh Radar dependencies
-discord.py>=2.4.0
 requests>=2.31.0
 feedparser>=6.0.11
 openai>=1.40.0
