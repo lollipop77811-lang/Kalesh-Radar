@@ -19,6 +19,8 @@ def score_divisiveness(topic: Topic) -> float:
         return _score_reddit_divisiveness(topic)
     elif topic.source == "x":
         return _score_x_divisiveness(topic)
+    elif topic.source == "hackernews":
+        return _score_hn_divisiveness(topic)
     return 0.0
 
 
@@ -119,5 +121,42 @@ def _score_x_divisiveness(topic: Topic) -> float:
     # Retweet/quote-tweet boost (people sharing their takes = divided opinions)
     if topic.retweet_count > replies * 0.5:
         score = min(score + 10, 100)
+
+    return max(0, min(score, 100))
+
+
+def _score_hn_divisiveness(topic: Topic) -> float:
+    """
+    HN divisiveness from comment-to-point ratio.
+    HN doesn't have downvotes, so we use comments/points as a proxy.
+    High comments relative to points = people arguing in threads.
+    """
+    points = topic.upvote_count
+    comments = topic.comment_count
+
+    if points == 0 and comments == 0:
+        return 5.0
+
+    if points == 0:
+        return min(comments * 3, 95)
+
+    # Comments per point ratio
+    ratio = comments / points
+
+    if ratio >= 1.0:
+        # More comments than points = serious debate
+        score = 70 + min(ratio - 1.0, 3) * 10
+    elif ratio >= 0.5:
+        score = 50 + (ratio - 0.5) * 40
+    elif ratio >= 0.2:
+        score = 30 + (ratio - 0.2) * 67
+    else:
+        score = ratio * 150
+
+    # High absolute comments = long threads = debate
+    if comments > 300:
+        score = min(score + 15, 100)
+    elif comments > 100:
+        score = min(score + 8, 100)
 
     return max(0, min(score, 100))

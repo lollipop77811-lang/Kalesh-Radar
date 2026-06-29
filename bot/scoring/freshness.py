@@ -20,6 +20,9 @@ LIFECYCLE_HOURS = {
 
     # X — everything moves faster
     "x:default": 6,
+
+    # HN — front page cycles in ~12-16 hours
+    "hackernews:default": 14,
 }
 
 
@@ -30,6 +33,8 @@ def get_lifecycle_hours(topic: Topic) -> float:
         return LIFECYCLE_HOURS.get(key, LIFECYCLE_HOURS["reddit:default"])
     elif topic.source == "x":
         return LIFECYCLE_HOURS["x:default"]
+    elif topic.source == "hackernews":
+        return LIFECYCLE_HOURS["hackernews:default"]
     return 12.0
 
 

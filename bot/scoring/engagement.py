@@ -35,6 +35,8 @@ def score_engagement(topic: Topic) -> float:
         return _score_reddit_engagement(topic)
     elif topic.source == "x":
         return _score_x_engagement(topic)
+    elif topic.source == "hackernews":
+        return _score_hn_engagement(topic)
     return 0.0
 
 
@@ -119,3 +121,45 @@ def _score_x_engagement(topic: Topic) -> float:
         score = min(score + 5, 100)
 
     return max(0, min(score, 100))
+
+
+def _score_hn_engagement(topic: Topic) -> float:
+    """
+    Hacker News: we have real score (upvotes) AND comment count.
+    HN is great — actual data, no scraping needed.
+    """
+    points = topic.upvote_count
+    comments = topic.comment_count
+    age = topic.age_hours
+    if age < 0.5:
+        age = 0.5
+
+    # Points velocity (points per hour)
+    points_velocity = points / age
+    # Comment velocity
+    comment_velocity = comments / age
+
+    # Base score from points (100+ points on HN is solid)
+    base = min(points / 3, 50)  # 150 pts = 50 points
+
+    # Comment velocity bonus (high comments/hour = heated)
+    if comment_velocity > 10:
+        base = min(base + 25, 100)
+    elif comment_velocity > 5:
+        base = min(base + 15, 100)
+    elif comment_velocity > 2:
+        base = min(base + 8, 100)
+
+    # Comment-to-points ratio: lots of comments relative to points = debate
+    if points > 0 and comments / points > 1.0:
+        base = min(base + 15, 100)
+    elif points > 0 and comments / points > 0.5:
+        base = min(base + 8, 100)
+
+    # Viral signal: very recent with high engagement
+    if age < 3 and points > 100:
+        base = min(base + 15, 100)
+    elif age < 3 and points > 50:
+        base = min(base + 8, 100)
+
+    return max(0, min(base, 100))

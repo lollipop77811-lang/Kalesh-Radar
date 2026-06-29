@@ -46,6 +46,8 @@ def _source_badge(topic: Topic) -> str:
         return f"Reddit r/{topic.subreddit}"
     elif topic.source == "x" and topic.curator:
         return f"X @{topic.curator}"
+    elif topic.source == "hackernews":
+        return f"HN ({topic.upvote_count} pts, {topic.comment_count} comments)"
     return topic.source.upper()
 
 

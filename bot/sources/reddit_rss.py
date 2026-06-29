@@ -22,10 +22,15 @@ _session.headers.update({
 # Reddit multireddit groups — each group is ONE RSS request
 # This avoids per-subreddit rate limiting (non-auth IPs get 429 fast)
 MULTIREDDIT_GROUPS = {
-    "all": {
-        "subs": "india+IndiaSpeaks+BollyBlindsNGossip+SubredditDrama+CorporateSlavery+Chodi+unpopularopinion+technology",
+    "hot": {
+        "subs": "india+IndiaSpeaks+BollyBlindsNGossip+SubredditDrama+CorporateSlavery+Chodi+unpopularopinion+technology+TrueOffMyChest+antiwork",
         "sort": "hot",
         "limit": 40,
+    },
+    "controversial": {
+        "subs": "india+IndiaSpeaks+SubredditDrama+unpopularopinion",
+        "sort": "controversial",
+        "limit": 20,
     },
 }
 
@@ -34,6 +39,7 @@ _SUBREDDIT_WEIGHTS = {
     "india": 1.2, "indiaspeaks": 1.0, "bollyblindsngossip": 0.9,
     "subredditdrama": 0.8, "corporateslavery": 1.0, "chodi": 0.8,
     "unpopularopinion": 0.6, "technology": 0.7,
+    "trueoffmychest": 0.6, "antiwork": 0.7,
 }
 
 # Subreddits that are India-centric
