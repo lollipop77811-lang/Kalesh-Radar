@@ -10,12 +10,32 @@ import os
 JINA_READER_BASE = os.environ.get("JINA_READER_BASE", "https://r.jina.ai")
 
 # ── Nitter instances (open-source Twitter frontend with RSS) ─────────────────
-NITTER_INSTANCES = [
-    "https://nitter.privacydev.net",
-    "https://nitter.poast.org",
-    "https://nitter.woodland.cafe",
-    "https://nitter.projectsegfau.lt",
-]
+# ── X/Twitter Trend Sources ─────────────────────────────────────────────────
+# GetDayTrends provides scored, ranked X/Twitter trends with recency.
+# Trends24 provides raw trending topic names (no scores, more topics).
+X_TREND_SOURCES = {
+    "getdaytrends": {
+        "india": "https://getdaytrends.com/india/",
+        "india_top": "https://getdaytrends.com/india/top/tweeted/day/",
+        "worldwide": "https://getdaytrends.com/united-states/",
+        "worldwide_top": "https://getdaytrends.com/united-states/top/tweeted/day/",
+    },
+    "trends24": {
+        "india": "https://trends24.in/india/",
+        "worldwide": "https://trends24.in/united-states/",
+    },
+}
+
+# Maximum trends to fetch per source per region
+X_TRENDS_PER_SOURCE = 25
+
+# Dead Nitter instances (kept for reference — DO NOT USE)
+# NITTER_INSTANCES = [
+#     "https://nitter.privacydev.net",    # Connection refused
+#     "https://nitter.poast.org",         # 403 Cloudflare
+#     "https://nitter.woodland.cafe",     # Connection refused
+#     "https://nitter.projectsegfau.lt",  # IP banned
+# ]
 
 # ── Discord (Webhooks — more reliable than bot gateway for CI) ────────────────
 # Create webhooks in each channel: Channel Settings → Integrations → Webhooks → New
@@ -82,6 +102,11 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-20250414")
+
+# ── Satire Threshold ─────────────────────────────────────────────────────
+# Only topics with satirizability score >= this threshold are considered.
+# Set to 0 to disable filtering.
+SATIRE_MIN_THRESHOLD = 70
 
 # ── Scoring Weights ──────────────────────────────────────────────────────────
 SCORING_WEIGHTS = {

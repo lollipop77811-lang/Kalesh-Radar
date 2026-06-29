@@ -132,24 +132,42 @@ def _parse_llm_response(content: str, topic: Topic) -> float:
 
 # Keywords/patterns that boost satirizability
 SATIRE_BOOSTERS = [
+    # India-specific kalesh
     (r"\bCEO\b.*\b(work|passion|sunday|weekend|grind|hustle)\b", 30, "CEO tone-deaf"),
-    (r"\blinkedin\b", 20, "LinkedIn post"),
-    (r"\bunpopular\s+opinion\b", 20, "Self-identified controversy"),
+    (r"\blinkedin\b", 25, "LinkedIn post"),
+    (r"\bunpopular\s+opinion\b", 25, "Self-identified controversy"),
     (r"\bnepotism\b", 25, "Nepotism angle"),
-    (r"\barranged\s+marriage\b", 20, "Arranged marriage debate"),
-    (r"\bai\s+(will|can|should|replaced|replace)\b", 10, "AI hype/doom"),
-    (r"\bcricket\b.*\b(fix|fixed|rigged|biased|unfair)\b", 20, "Cricket conspiracy"),
-    (r"\b(ipl|bcci)\b", 15, "IPL/BCCI drama"),
+    (r"\barranged\s+marriage\b", 25, "Arranged marriage debate"),
+    (r"\bcricket\b.*\b(fix|fixed|rigged|biased|unfair)\b", 25, "Cricket conspiracy"),
+    (r"\b(ipl|bcci)\b", 20, "IPL/BCCI drama"),
     (r"\bstartup\b.*\b(fire|laid\s*off|funding|unicorn|down\s*round)\b", 25, "Startup drama"),
     (r"\b(corporate|work)\s*(culture|slave)\b", 25, "Corporate slavery"),
-    (r"\bbollywood\b.*\b(nepotism|boycott|flop|hit)\b", 20, "Bollywood drama"),
-    (r"\bshould\b.*\bbe\s+banned\b", 15, "Ban demand"),
-    (r"everyone\s+(is|are)\s+(wrong|stupid|crazy|dumb)", 20, "Takes claim"),
-    (r"\bhot\s+take\b", 25, "Self-identified hot take"),
-    (r"ratio['d]*", 20, "Already ratio'd"),
-    (r"main\s+character", 15, "Main character energy"),
-    (r"red\s+flag", 15, "Red flag discussion"),
-    (r"gaslighting", 15, "Gaslighting discussion"),
+    (r"\bbollywood\b.*\b(nepotism|boycott|flop|hit)\b", 25, "Bollywood drama"),
+    (r"\bshould\b.*\bbe\s+banned\b", 20, "Ban demand"),
+    (r"everyone\s+(is|are)\s+(wrong|stupid|crazy|dumb)", 25, "Takes claim"),
+    (r"\bhot\s+take\b", 30, "Self-identified hot take"),
+    (r"ratio['d]*", 25, "Already ratio'd"),
+    (r"main\s+character", 20, "Main character energy"),
+    (r"red\s+flag", 20, "Red flag discussion"),
+    (r"gaslighting", 20, "Gaslighting discussion"),
+    # Broad controversy/debate signals
+    (r"\b(toxic|toxicity)\b", 20, "Toxicity discussion"),
+    (r"\bcontroversial\b", 25, "Self-identified controversy"),
+    (r"\bdebate\b", 15, "Debate topic"),
+    (r"\b(boycott|cancel)\b", 25, "Boycott/cancel culture"),
+    (r"\b(unpopular|against|hate|love|worst|best)\b.*\b(opinion|take|thing|part|move)\b", 20, "Strong opinion"),
+    (r"(why|how)\s+(do|does|is|are|can)\s+\w+", 10, "Question framing"),
+    (r"\b(ai|artificial\s+intelligence)\b", 15, "AI topic"),
+    (r"\bindia\b.*\b(vs|versus|against)\b", 15, "India vs something"),
+    (r"\b(modi|pm|bjp|congress|aap|tmc)\b", 15, "Political topic"),
+    (r"\b(caste|religion|hindu|muslim|sikh)\b", 15, "Sensitive identity topic"),
+    (r"\b(men|women|boys|girls|male|female)\b.*\b(should|can|why|how|always|never)\b", 15, "Gender war"),
+    (r"\b(friendzone|simp|nice\s+guy|alpha|beta|sigma)\b", 25, "Dating culture war"),
+    (r"\b(in\-laws|saas|bahu|mother\s*in\s*law)\b", 20, "In-law drama"),
+    (r"\b(engagement|wedding|marriage|divorce)\b.*\b(bad|worst|toxic|red\s+flag|should)\b", 20, "Marriage drama"),
+    (r"\bsmash\b.*\b(burger|not|overrated)\b", 20, "Food war"),
+    (r"\b(indian\s+men|indian\s+women)\b", 25, "Indian gender discourse"),
+    (r"\b(entrepreneur|founder|ceo|cto)\b.*\b(failed|fired|arrested|scam|fraud)\b", 25, "Founder downfall"),
 ]
 
 # Topics that are NEVER satirizable
@@ -166,7 +184,16 @@ def _score_rules(topic: Topic) -> float:
     import re
 
     text = (topic.title + " " + topic.body).lower()
-    score = 20.0  # Base score — everything has SOME potential
+    score = 30.0  # Base score — everything has SOME potential
+
+    # Reddit topics from drama/kalesh subreddits get a base boost
+    DRAMA_SUBS = {
+        "subredditdrama", "indiaspeaks", "chodi", "unpopularopinion",
+        "bollyblindsngossip", "corporateslavery", "india",
+    }
+    if topic.source == "reddit" and topic.subreddit and topic.subreddit.lower() in DRAMA_SUBS:
+        score += 15
+        logger.debug(f"Drama subreddit boost: +15 for r/{topic.subreddit}")
 
     # Check for satire killers first
     for killer_pattern in SATIRE_KILLERS:
@@ -187,9 +214,26 @@ def _score_rules(topic: Topic) -> float:
         score += 5
 
     # Engagement as proxy: high comments = people are emotionally invested = satirizable
-    if topic.comment_count > 300:
+    if topic.comment_count > 500:
+        score += 15
+    elif topic.comment_count > 200:
         score += 10
-    elif topic.comment_count > 100:
+    elif topic.comment_count > 50:
         score += 5
+
+    # Divisiveness proxy: upvote_ratio far from 0.5 = people are split
+    if 0.4 < topic.upvote_ratio < 0.95:
+        score += 10  # Controversial upvote pattern
+
+    # X/Twitter trends are inherently satirizable — they're controversial
+    # enough to trend nationally/globally, which means people are fighting
+    # over them. This is prime satire territory.
+    if topic.source == "x":
+        score += 35  # Big boost: trending = controversy = satire gold
+        logger.debug(f"X trend satire boost: +35 for '{topic.title[:50]}'")
+
+        # Hashtag topics are even better for one-liner satire
+        if topic.title.startswith("#"):
+            score += 10
 
     return max(0, min(score, 100))

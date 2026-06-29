@@ -81,43 +81,37 @@ def _score_reddit_engagement(topic: Topic) -> float:
 
 def _score_x_engagement(topic: Topic) -> float:
     """
-    X: Use reply count as proxy for engagement.
-    Higher replies relative to likes = more heated = higher velocity.
+    X trends: Use GetDayTrends score (if available) or rank-based heuristic.
+    GetDayTrends score is embedded in topic.body.
     """
-    replies = topic.reply_count
-    likes = topic.like_count
-    retweets = topic.retweet_count
+    # Try to extract GetDayTrends score from body
+    import re
+    gdt_match = re.search(r"GetDayTrends score:\s*([\d.]+)", topic.body or "")
+    gdt_score = float(gdt_match.group(1)) if gdt_match else 0
 
-    if topic.age_hours < 0.5:
-        age_hours = 0.5  # Floor to avoid division issues
+    if gdt_score > 0:
+        # Map GetDayTrends score (typically 50-600) to engagement 0-100
+        # 500+ = massive trend, 200-500 = big, 100-200 = moderate, <100 = small
+        if gdt_score >= 400:
+            score = 65
+        elif gdt_score >= 250:
+            score = 55
+        elif gdt_score >= 150:
+            score = 45
+        else:
+            score = 35
+    elif topic.curator == "trends24":
+        # Trends24 has no scores — use rank heuristic
+        # Trends are stored with comment_count based on rank position
+        score = min(30 + topic.comment_count * 0.1, 60)
     else:
-        age_hours = topic.age_hours
+        # Fallback: use reply velocity like before, but more conservative
+        age_hours = max(topic.age_hours, 0.5)
+        velocity = topic.reply_count / age_hours
+        score = min(velocity * 0.5, 50)
 
-    velocity = replies / age_hours
-
-    # Reply-to-like ratio: high replies + low likes = ratio'd = high engagement
-    if likes > 0:
-        reply_ratio = replies / likes
-    else:
-        reply_ratio = replies  # All replies, no likes = maximum ratio
-
-    # Base score from velocity (reply velocity)
-    score = min(velocity * 2, 60)  # Scale: 30 replies/hr = 60 points
-
-    # Ratio bonus: more replies than likes = controversial
-    if reply_ratio > 1.0:
-        score = min(score + 25, 100)
-    elif reply_ratio > 0.5:
-        score = min(score + 15, 100)
-    elif reply_ratio > 0.2:
-        score = min(score + 5, 100)
-
-    # Retweet boost (quote tweets = people engaging with takes)
-    if retweets > 100:
-        score = min(score + 15, 100)
-    elif retweets > 50:
-        score = min(score + 10, 100)
-    elif retweets > 20:
+    # Small boost for very recent trends
+    if topic.age_hours < 2:
         score = min(score + 5, 100)
 
     return max(0, min(score, 100))

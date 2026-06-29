@@ -5,7 +5,7 @@ Scoring engine — orchestrates all scorers and computes the final score.
 import logging
 from typing import List, Tuple
 
-from bot.config import SCORING_WEIGHTS, SLOT_CONFIG, TOPICS_PER_SLOT
+from bot.config import SCORING_WEIGHTS, SLOT_CONFIG, TOPICS_PER_SLOT, SATIRE_MIN_THRESHOLD
 from bot.sources.base import Topic
 from bot.scoring.engagement import score_engagement
 from bot.scoring.divisiveness import score_divisiveness
@@ -49,6 +49,15 @@ def select_top_topics(topics: List[Topic], slot: str) -> List[Topic]:
 
     # Filter to only safe topics
     safe_topics = [t for t in topics if t.safety_passed is not False]
+
+    # Filter by satire threshold — only topics with high satire potential
+    if SATIRE_MIN_THRESHOLD > 0:
+        before_satire = len(safe_topics)
+        safe_topics = [t for t in safe_topics if t.satirizability_score >= SATIRE_MIN_THRESHOLD]
+        logger.info(
+            f"Satire gate (>= {SATIRE_MIN_THRESHOLD}): "
+            f"{before_satire} → {len(safe_topics)} topics passed"
+        )
 
     # Separate by region
     india_topics = [t for t in safe_topics if t.region == "india"]
