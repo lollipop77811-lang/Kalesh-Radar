@@ -22,24 +22,57 @@ _session.headers.update({
 # Reddit multireddit groups — each group is ONE RSS request
 # This avoids per-subreddit rate limiting (non-auth IPs get 429 fast)
 MULTIREDDIT_GROUPS = {
+    # Kalesh core: gender wars, political memes, cultural commentary, corporate slavery
     "hot": {
-        "subs": "india+IndiaSpeaks+BollyBlindsNGossip+SubredditDrama+CorporateSlavery+Chodi+unpopularopinion+technology+TrueOffMyChest+antiwork",
+        "subs": (
+            "india+IndiaSpeaks+BollyBlindsNGossip+SubredditDrama+CorporateSlavery"
+            "+Chodi+unpopularopinion+technology+TrueOffMyChest+antiwork"
+            "+IndiaMemes+Indiangirlsontinder+IndiaTech+delhi"
+            "+IndianDankMemes+DesiMeta+liberalmarxist+IndiaDiscussion"
+            "+IndiaPolitics+PoliticalIndia+AskIndia+TwoXIndia+IndianParenting"
+            "+IndiaNews+RealIndia+IndiaAfterDark"
+        ),
         "sort": "hot",
-        "limit": 40,
+        "limit": 75,
     },
+    # Controversial takes — separate request for max drama
     "controversial": {
-        "subs": "india+IndiaSpeaks+SubredditDrama+unpopularopinion",
+        "subs": (
+            "india+IndiaSpeaks+SubredditDrama+unpopularopinion"
+            "+Indiangirlsontinder+IndiaMemes+Chodi+IndiaDiscussion"
+            "+IndiaPolitics+PoliticalIndia+TwoXIndia+liberalmarxist"
+        ),
         "sort": "controversial",
-        "limit": 20,
+        "limit": 35,
+    },
+    # Rising / new — catch fresh political/cultural takes early
+    "rising": {
+        "subs": (
+            "india+IndiaSpeaks+IndiaMemes+IndiaPolitics+PoliticalIndia"
+            "+Indiangirlsontinder+IndiaTech+TwoXIndia+IndiaDiscussion"
+            "+BollyBlindsNGossip+CorporateSlavery+delhi"
+        ),
+        "sort": "rising",
+        "limit": 30,
     },
 }
 
 # Subreddit-to-weight mapping for scoring
 _SUBREDDIT_WEIGHTS = {
-    "india": 1.2, "indiaspeaks": 1.0, "bollyblindsngossip": 0.9,
-    "subredditdrama": 0.8, "corporateslavery": 1.0, "chodi": 0.8,
-    "unpopularopinion": 0.6, "technology": 0.7,
-    "trueoffmychest": 0.6, "antiwork": 0.7,
+    # Kalesh goldmines — gender wars, dating culture
+    "indiamemes": 1.3, "indiangirlsontinder": 1.3, "indiadankmemes": 1.2,
+    "indiaafterdark": 1.2, "twoxindia": 1.1,
+    # Political / debate — HIGH priority for user
+    "indiapolitics": 1.4, "politicalindia": 1.4, "indianews": 1.3, "realindia": 1.2,
+    "india": 1.2, "indiaspeaks": 1.2, "chodi": 1.0, "indiadiscussion": 1.0, "liberalmarxist": 1.0,
+    # Tech / corporate / scam
+    "indiatech": 1.2, "desimeta": 1.1, "corporateslavery": 1.1, "antiwork": 0.8,
+    # Cultural / family drama
+    "indianparenting": 1.2, "askindia": 1.1, "delhi": 0.9,
+    # Drama / gossip
+    "bollyblindsngossip": 0.9, "subredditdrama": 0.8,
+    # General controversy
+    "unpopularopinion": 0.7, "technology": 0.7, "trueoffmychest": 0.7,
 }
 
 # Subreddits that are India-centric
@@ -47,6 +80,13 @@ _INDIA_SUBREDDITS = {
     "india", "indiaspeaks", "chodi", "desimeta", "indianews",
     "indianstartup", "corporateslavery", "bollyblindsngossip",
     "askindia", "liberalmarxist", "indiadiscussion",
+    # Meme/take/gender/cultural subs
+    "indiamemes", "indiangirlsontinder", "indiadankmemes",
+    "indiatech", "delhi", "twoxindia",
+    # Political subs
+    "indiapolitics", "politicalindia", "realindia",
+    # Cultural/family/life subs
+    "indianparenting", "indiaafterdark",
 }
 
 

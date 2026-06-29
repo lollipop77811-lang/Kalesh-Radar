@@ -144,7 +144,17 @@ INDIA_KEYWORDS = [
     "india", "indian", "bharat", "iit", "iim", "ipl", "bcci", "bollywood",
     "cricket", "delhi", "mumbai", "bangalore", "chennai", "kolkata", "hyderabad",
     "modi", "rahul gandhi", "supreme court of india", "upsc", "neet",
-    "startup india", "upsc", "jee", "cbse", "hinglish", "desi",
+    "startup india", "jee", "cbse", "hinglish", "desi",
+    # Political
+    "bjp", "congress", "aap", "tmc", "amit shah", "kejriwal", "yogi",
+    "adityanath", "mamata", "rss", "hindutva", "lutyens", "parliament",
+    "rajya sabha", "lok sabha", "election commission", "ed ", "cbi",
+    # Cultural
+    "rupee", "₹", "crore", "lakh", "shaadi", "arranged marriage",
+    "iit delhi", "iit bombay", "iim ahmedabad", "aiims", "neet exam",
+    # Tech/Corporate India
+    "infosys", "tcs", "wipro", "flipkart", "swiggy", "zomato",
+    "paytm", "ola", "urban company", "phonepe", "gpay",
 ]
 
 # ── Database ────────────────────────────────────────────────────────────────
