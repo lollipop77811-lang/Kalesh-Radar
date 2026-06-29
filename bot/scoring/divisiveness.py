@@ -30,23 +30,57 @@ def _score_reddit_divisiveness(topic: Topic) -> float:
     """
     ratio = topic.upvote_ratio
 
-    if ratio <= 0 or ratio >= 1:
-        # Perfectly unanimous or no data
-        return 5.0  # Tiny base score — even unanimous threads have SOME debate in comments
+    # RSS-sourced topics have upvote_ratio=1.0 (unknown) and comment_count=0.
+    # Use a heuristic based on title keywords and subreddit to estimate divisiveness.
+    if ratio >= 1.0 and topic.comment_count == 0:
+        return _estimate_divisiveness_from_content(topic)
 
-    # Distance from 0.5 on a 0-0.5 scale
-    distance = abs(ratio - 0.5)  # 0 = perfectly split, 0.5 = unanimous
+    if ratio <= 0 or ratio >= 1:
+        return 5.0
+
+    distance = abs(ratio - 0.5)
     score = (1 - distance * 2) * 100
 
-    # Boost for high comment count even if ratio isn't 50/50
-    # (long comment threads often have heated debates even with high upvote ratio)
     if topic.comment_count > 500:
         score = min(score + 15, 100)
     elif topic.comment_count > 200:
         score = min(score + 8, 100)
 
-    # Controversial sort inherently surfaces divided threads
-    # (we don't know which sort was used here, but high comment/low score suggests it)
+    return max(0, min(score, 100))
+
+
+def _estimate_divisiveness_from_content(topic: Topic) -> float:
+    """
+    When we don't have vote data (RSS source), estimate divisiveness
+    from the title content and subreddit.
+    """
+    score = 30  # Base score for any hot/controversial post
+    title_lower = topic.title.lower()
+
+    # Strong divisiveness signals in titles
+    hot_words = [
+        "controversial", "debate", "vs", "versus", "wrong", "right",
+        "should", "ban", "stop", "why", "is it", "opinion", "unpopular",
+        "agree", "disagree", "boycott", "cancel", "problem", "issue",
+        "worse", "better", "destroying", "ruined", "saved",
+        "modi", "bjp", "congress", "left", "right", "liberal", "conservative",
+        "hindu", "muslim", "secular", "communal", "nationalist",
+        "gender", "feminist", "misogyny", "patriarchy",
+        "nepotism", "privilege", "caste", "reservation",
+    ]
+
+    matches = sum(1 for w in hot_words if w in title_lower)
+    score += matches * 8  # Each match adds 8 points
+
+    # Question titles tend to invite debate
+    if "?" in topic.title:
+        score += 10
+
+    # Subreddits known for debate get a boost
+    debate_subs = {"indiaspeaks", "chodi", "unpopularopinion", "subredditdrama",
+                   "liberalmarxist", "india"}
+    if (topic.subreddit or "").lower() in debate_subs:
+        score += 10
 
     return max(0, min(score, 100))
 

@@ -40,6 +40,18 @@ def score_engagement(topic: Topic) -> float:
 
 def _score_reddit_engagement(topic: Topic) -> float:
     """Reddit: velocity = comments / age_in_hours."""
+    # RSS-sourced topics have comment_count=0 — give a baseline score
+    # since being on hot/controversial already implies engagement
+    if topic.comment_count == 0 and topic.upvote_count == 0:
+        # No engagement data (RSS source). Freshness becomes the key signal.
+        # More recent = likely more engaged.
+        if topic.age_hours < 4:
+            return 55  # Very recent, likely still active
+        elif topic.age_hours < 12:
+            return 45  # Recent
+        else:
+            return 30  # Older, less likely to be active
+
     velocity = topic.engagement_velocity  # comments per hour
 
     # Get baseline for this subreddit

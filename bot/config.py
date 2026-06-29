@@ -6,6 +6,17 @@ Secrets are read from environment variables (set in GitHub Actions or .env file)
 
 import os
 
+# ── Jina Reader (free, no API keys — default Reddit fetcher) ─────────────────
+JINA_READER_BASE = os.environ.get("JINA_READER_BASE", "https://r.jina.ai")
+
+# ── Nitter instances (open-source Twitter frontend with RSS) ─────────────────
+NITTER_INSTANCES = [
+    "https://nitter.privacydev.net",
+    "https://nitter.poast.org",
+    "https://nitter.woodland.cafe",
+    "https://nitter.projectsegfau.lt",
+]
+
 # ── Discord (Webhooks — more reliable than bot gateway for CI) ────────────────
 # Create webhooks in each channel: Channel Settings → Integrations → Webhooks → New
 DISCORD_CHANNEL_MAP = {
@@ -15,35 +26,34 @@ DISCORD_CHANNEL_MAP = {
     "night":     os.environ.get("WEBHOOK_NIGHT", ""),
 }
 
-# ── Reddit ───────────────────────────────────────────────────────────────────
+# ── Reddit OAuth (OPTIONAL — only needed if Jina Reader fails) ──────────────
+# If these are not set, the bot uses Jina Reader (free, no API keys).
+# To enable OAuth: register a script app at https://www.reddit.com/prefs/apps
 REDDIT_USER_AGENT = "kalesh-radar-bot/0.1 (by /u/kaleshradar)"
 REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", "")
 
 # Subreddits to track with their sort strategy
+# NOTE: When using RSS (no API keys), Reddit rate-limits aggressively.
+# Keep this list focused on the highest-value subreddits to stay within limits.
 REDDIT_SUBREDDITS = {
-    # Tier 1 — Must-track
-    "india":             {"sorts": ["controversial", "hot"], "weight": 1.2},
-    "IndiaSpeaks":       {"sorts": ["controversial", "hot"], "weight": 1.0},
-    "BollyBlindsNGossip":{"sorts": ["hot"],                 "weight": 0.9},
-    "SubredditDrama":    {"sorts": ["hot"],                 "weight": 0.8},
+    # Tier 1 — Must-track (India)
+    "india":             {"sorts": ["hot"], "weight": 1.2},
+    "IndiaSpeaks":       {"sorts": ["hot"], "weight": 1.0},
+    "SubredditDrama":    {"sorts": ["hot"], "weight": 0.8},
+    "BollyBlindsNGossip":{"sorts": ["hot"], "weight": 0.9},
 
-    # Tier 2 — High-value niche
-    "IndianStartup":     {"sorts": ["hot", "controversial"], "weight": 1.1},
-    "CorporateSlavery":  {"sorts": ["hot"],                   "weight": 1.0},
-    "DesiMeta":          {"sorts": ["hot"],                   "weight": 0.7},
-    "Chodi":             {"sorts": ["hot"],                   "weight": 0.8},
-    "indianews":         {"sorts": ["hot"],                   "weight": 0.7},
+    # Tier 2 — High-value niche (India)
+    "CorporateSlavery":  {"sorts": ["hot"], "weight": 1.0},
+    "Chodi":             {"sorts": ["hot"], "weight": 0.8},
 
-    # Tier 3 — Niche but explosive
-    "Cricket":           {"sorts": ["hot"],           "weight": 0.6, "seasonal": True},
-    "AskIndia":          {"sorts": ["hot"],           "weight": 0.5},
-    "unpopularopinion":  {"sorts": ["hot"],           "weight": 0.6},
-    "technology":        {"sorts": ["controversial"], "weight": 0.7},
+    # Tier 3 — Worldwide + niche
+    "unpopularopinion":  {"sorts": ["hot"], "weight": 0.6},
+    "technology":        {"sorts": ["hot"], "weight": 0.7},
 }
 
-# How many posts to fetch per subreddit per sort
-REDDIT_FETCH_LIMIT = 25
+# How many posts to fetch per subreddit per sort (keep low to avoid rate limits)
+REDDIT_FETCH_LIMIT = 10
 
 # ── X / Twitter via RSSHub ───────────────────────────────────────────────────
 RSSHUB_BASE_URL = "https://rsshub.app"  # Change to self-hosted instance if you have one

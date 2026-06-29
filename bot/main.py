@@ -50,9 +50,9 @@ def run_slot(slot: str):
     if not topics:
         logger.warning("No topics fetched. Nothing to do.")
         try:
-            send_error(slot, "No topics fetched. Make sure REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET "
-                      "secrets are set in GitHub repo Settings > Secrets. "
-                      "Register a script app at https://www.reddit.com/prefs/apps")
+            send_error(slot, "No topics fetched from any source (Reddit via Jina + X via Nitter). "
+                      "This is likely a temporary issue with Jina Reader or Nitter instances. "
+                      "Check the workflow logs for details.")
         except Exception:
             pass
         return
